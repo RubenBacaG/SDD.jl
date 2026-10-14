@@ -436,7 +436,7 @@ function Makie.plot!(plt::OrbitArcPath{<:Tuple{ Function, Any } } )
       funcolor = (k::Int, n::Int) -> c0
     end
   elseif clrn == :time
-    cmarr = [ cm[n/(nits-1)] for n in 0:(nits-1) ]
+    cmarr = nits > 1 ? [ cm[n/(nits-1)] for n in 0:(nits-1) ] : [ cm[0.0] ]
     funcolor = (k::Int, n::Int) -> cmarr[n]
   end
 
@@ -445,7 +445,12 @@ function Makie.plot!(plt::OrbitArcPath{<:Tuple{ Function, Any } } )
   delete!(plt.attributes.attributes, :hidediterations)
   delete!(plt.attributes.attributes, :coloring)
 
-  # Drawing the iterations
+  # Drawing the iterations: all the arcs in a single `lines` plot, separated by
+  # NaN points, with one color per point. (One `arc!` per iteration created
+  # hundreds of plots, which is slow to send to the browser in WGLMakie.)
+  narc = 32 # Segments per arc
+  pts = Point2f[]
+  cols = RGBAf[]
   k = 1
   for x0 in x0s
     x = x0
@@ -453,14 +458,20 @@ function Makie.plot!(plt::OrbitArcPath{<:Tuple{ Function, Any } } )
       y = f(x)
       c = (x+y)/2
       r = abs(c-x)
-
-      arc!(plt, Point2f(c,0), r, 0, x < y ? pi : -pi;
-        plt.attributes.attributes..., color = funcolor(k,n))
-      
+      s = x < y ? 1 : -1 # Above the line when moving right, below when moving left
+      col = RGBAf(Makie.to_color(funcolor(k,n)))
+      for t in range(0, pi; length=narc+1)
+        push!(pts, Point2f(c + r*cos(t), s*r*sin(t)))
+        push!(cols, col)
+      end
+      push!(pts, Point2f(NaN, NaN))
+      push!(cols, col)
       x = y
     end
     k += 1
   end
+
+  lines!(plt, pts; plt.attributes.attributes..., color = cols)
 
   plt
 end
