@@ -52,13 +52,13 @@ function matrixtrappedpoints(f::Function, xs::AbstractVector{<:Real}, ys::Abstra
 
   if rot90
     _ys = Base.reverse(ys)
-    for h in 1:H
+    Threads.@threads for h in 1:H
       for w in 1:W
         mtrx[h,w] = value(esctime(xs[w],_ys[h]))
       end
     end
   else
-    for h in 1:H
+    Threads.@threads for h in 1:H
       for w in 1:W
         mtrx[w,h] = value(esctime(xs[w],ys[h]))
       end

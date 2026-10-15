@@ -50,13 +50,13 @@ function matrixsimplepreimages(f::Function, xs::AbstractVector{<:Real}, ys::Abst
 
   if rot90
     _ys = Base.reverse(ys)
-    for h in 1:H
+    Threads.@threads for h in 1:H
       for w in 1:W
         mtrx[h,w] = value(preval(xs[w],_ys[h]))
       end
     end
   else
-    for h in 1:H
+    Threads.@threads for h in 1:H
       for w in 1:W
         mtrx[w,h] = value(preval(xs[w],ys[h]))
       end
@@ -217,7 +217,7 @@ function matrixpreimages(f::Function, xs::AbstractVector{<:Real}, ys::AbstractVe
 
   if rot90
     _ys = Base.reverse(ys)
-    for h in 1:H
+    Threads.@threads for h in 1:H
       for w in 1:W
         p = topoint(xs[w], _ys[h])
         for n in 1:iterations
@@ -227,7 +227,7 @@ function matrixpreimages(f::Function, xs::AbstractVector{<:Real}, ys::AbstractVe
       end
     end
   else
-    for h in 1:H
+    Threads.@threads for h in 1:H
       for w in 1:W
         p = topoint(xs[w], ys[h])
         for n in 1:iterations

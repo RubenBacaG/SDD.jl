@@ -88,13 +88,13 @@ function matrixmandelbrot(f::Function, xs::AbstractVector{<:Real}, ys::AbstractV
 
   if rot90
     _ys = Base.reverse(ys)
-    for h in 1:H
+    Threads.@threads for h in 1:H
       for w in 1:W
         mtrx[h,w] = value(esctime(xs[w],_ys[h]))
       end
     end
   else
-    for h in 1:H
+    Threads.@threads for h in 1:H
       for w in 1:W
         mtrx[w,h] = value(esctime(xs[w],ys[h]))
       end
@@ -358,8 +358,6 @@ function matrixmandelbrotmultiseed(f::Function, xs::AbstractVector{<:Real}, ys::
   
   M = length(seed)
 
-  ets = fill(maxiterations, 1, M)
-
   W, H = length(xs), length(ys)
   ClrType = value0 isa RGB ? RGB{Float64} : RGBA{Float64}
   value0 = value0 isa RGB ? ClrType(value0) : ClrType(value0)
@@ -386,7 +384,8 @@ function matrixmandelbrotmultiseed(f::Function, xs::AbstractVector{<:Real}, ys::
 
   if rot90
     _ys = Base.reverse(ys)
-    for h in 1:H
+    Threads.@threads for h in 1:H
+      ets = fill(maxiterations, 1, M)   # uno por fila: las filas se calculan en paralelo
       for w in 1:W
         summaxits = 0
         for k in eachindex(seed)
@@ -405,7 +404,8 @@ function matrixmandelbrotmultiseed(f::Function, xs::AbstractVector{<:Real}, ys::
       end # for W
     end # for H
   else
-    for h in 1:H
+    Threads.@threads for h in 1:H
+      ets = fill(maxiterations, 1, M)   # uno por fila: las filas se calculan en paralelo
       for w in 1:W
         summaxits = 0
         for k in eachindex(seed)

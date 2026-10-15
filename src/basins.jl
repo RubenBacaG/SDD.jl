@@ -46,13 +46,13 @@ function matrixbasins(f::Function, xs::AbstractVector{<:Real}, ys::AbstractVecto
 
   if rot90
     _ys = Base.reverse(ys)
-    for h in 1:H
+    Threads.@threads for h in 1:H
       for w in 1:W
         mtrx[h,w] = value(basval(xs[w],_ys[h]))
       end
     end
   else
-    for h in 1:H
+    Threads.@threads for h in 1:H
       for w in 1:W
         mtrx[w,h] = value(basval(xs[w],ys[h]))
       end
@@ -239,13 +239,13 @@ function matrixbasinsbdry(f::Function, xs::AbstractVector{<:Real}, ys::AbstractV
 
   if rot90
     _ys = Base.reverse(ys)
-    for h in 1:H
+    Threads.@threads for h in 1:H
       for w in 1:W
         mtrx[h,w] = basclr(xs[w],_ys[h])
       end
     end
   else
-    for h in 1:H
+    Threads.@threads for h in 1:H
       for w in 1:W
         mtrx[w,h] = basclr(xs[w],ys[h])
       end
